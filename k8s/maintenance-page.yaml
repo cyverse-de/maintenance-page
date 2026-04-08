@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: maintenance-page
+  namespace: prod
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: maintenance-page
+rules:
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "create"]
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["httproutes"]
+    verbs: ["get", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: maintenance-page
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: maintenance-page
+subjects:
+  - kind: ServiceAccount
+    name: maintenance-page
+    namespace: default
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maintenance-page
+  namespace: prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: maintenance-page
+  template:
+    metadata:
+      labels:
+        app: maintenance-page
+    spec:
+      serviceAccountName: maintenance-page
+      containers:
+        - name: maintenance-page
+          image: harbor.cyverse.org/de/maintenance-page:latest
+          imagePullPolicy: Always
+          args:
+            - --namespace=prod
+            - --basic-auth-username=$(BASIC_AUTH_USERNAME)
+            - --basic-auth-password=$(BASIC_AUTH_PASSWORD)
+          env:
+            - name: BASIC_AUTH_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: maintenance-page-admin-auth
+                  key: username
+            - name: BASIC_AUTH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: maintenance-page-admin-auth
+                  key: password
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: admin
+              containerPort: 8081

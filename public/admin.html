@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Maintenance Mode Admin</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; }
+        .status { font-size: 24px; margin-bottom: 20px; }
+        .on { color: red; font-weight: bold; }
+        .off { color: green; font-weight: bold; }
+        button { padding: 10px 20px; font-size: 18px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Discovery Environment Maintenance Mode</h1>
+    <div class="status">
+        Current Status: 
+        {{if .IsMaintenance}}
+            <span class="on">ON (Maintenance Page Active)</span>
+        {{else}}
+            <span class="off">OFF (DE UI Active)</span>
+        {{end}}
+    </div>
+    <form action="/toggle" method="post">
+        <button type="submit">
+            {{if .IsMaintenance}}
+                Disable Maintenance Mode
+            {{else}}
+                Enable Maintenance Mode
+            {{end}}
+        </button>
+    </form>
+</body>
+</html>

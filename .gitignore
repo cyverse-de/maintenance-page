@@ -1,0 +1,23 @@
+# Binaries
+bin/
+maintenance-page
+
+# Dependencies
+vendor/
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+
+# Project specific
+.codex
