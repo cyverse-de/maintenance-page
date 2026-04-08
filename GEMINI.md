@@ -14,11 +14,10 @@ The design of the maintenance page should be lifted directly from its implementa
 
 maintenance-page is configurable through command-line flags. Here are the flags:
 * --maintenance-page-service - Sets the name of the K8s Service for the loading page. Defaults to "maintenance-page" without the quotes.
-* --admin-page-service - Sets the anem of the K8s Service for the admin page. Defaults to "maintenance-page-admin" without the quotes.
+* --admin-page-service - Sets the name of the K8s Service for the admin page. Defaults to "maintenance-page-admin" without the quotes.
 * --basic-auth-username - Sets the username for the admin page.
 * --basic-auth-password - Sets the password for the admin page.
 
 ## K8s Definitions
 
-Example files for deploying maintenance-page live in the k8s/ directory. 
-
+Example files for deploying maintenance-page live in the k8s/ directory.
