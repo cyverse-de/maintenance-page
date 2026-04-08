@@ -8,16 +8,13 @@ ARG TARGETOS=linux
 ARG TARGETARCH=amd64
 
 COPY go.mod go.sum ./
-RUN --mount=type=cache,target=/go/pkg/mod \
-    go mod download
+RUN go mod download
 
 COPY cmd ./cmd
 COPY internal ./internal
 COPY public ./public
 
-RUN --mount=type=cache,target=/go/pkg/mod \
-    --mount=type=cache,target=/root/.cache/go-build \
-    CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH \
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH \
     go build -trimpath -ldflags="-s -w" -o /out/maintenance-page ./cmd/maintenance-page
 
 FROM gcr.io/distroless/static-debian12:nonroot
