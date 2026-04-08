@@ -15,7 +15,7 @@ import (
 
 func TestEnsureService(t *testing.T) {
 	clientset := fake.NewSimpleClientset()
-	gwClient := gatewayfake.NewSimpleClientset()
+	gwClient := gatewayfake.NewClientset()
 	namespace := "test-ns"
 	log := logrus.New()
 	client := &Client{
@@ -74,7 +74,7 @@ func TestIsMaintenanceMode(t *testing.T) {
 		},
 	}
 
-	gwClient := gatewayfake.NewSimpleClientset(route)
+	gwClient := gatewayfake.NewClientset(route)
 	log := logrus.New()
 	client := &Client{
 		clientset:     clientset,
@@ -127,7 +127,7 @@ func TestSetMaintenanceMode(t *testing.T) {
 		},
 	}
 
-	gwClient := gatewayfake.NewSimpleClientset(route)
+	gwClient := gatewayfake.NewClientset(route)
 	log := logrus.New()
 	client := &Client{
 		clientset:     clientset,
