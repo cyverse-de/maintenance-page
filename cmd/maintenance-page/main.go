@@ -8,6 +8,9 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
+	"regexp"
+	"strings"
 	"syscall"
 	"time"
 
@@ -19,6 +22,35 @@ import (
 )
 
 var log = logrus.New()
+
+// maintenanceMiddleware serves static files from a directory for any base URL path. It works by inspecting the URL
+// path. If the URL path ends with a slash then the contents of `index.html` are returned. Otherwise, the base name is
+// extracted from the URL. If a file with that base name exists in the directory then the contents of that file are
+// returned. Otherwise, the contents of `index.html` are returned.
+func maintenanceMiddleware(maintenancePageDirectory string) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			urlPath := c.Request().URL.Path
+			defaultPath := filepath.Join(maintenancePageDirectory, "index.html")
+
+			// Extract the basename from the URL path, returning the default file if the basename is empty.
+			re := regexp.MustCompile(`/[^/]*$`)
+			basename := strings.TrimPrefix(re.FindString(urlPath), "/")
+			if basename == "" {
+				return c.File(defaultPath)
+			}
+
+			// Return the file with the given basename if it exists in the maintenance page directory.
+			filePath := filepath.Join(maintenancePageDirectory, filepath.Clean(basename))
+			if info, err := os.Stat(filePath); err == nil && !info.IsDir() {
+				return c.File(filePath)
+			}
+
+			// Fall back to the default path.
+			return c.File(defaultPath)
+		}
+	}
+}
 
 func setupEcho(log *logrus.Logger) *echo.Echo {
 	e := echo.New()
@@ -93,7 +125,7 @@ func main() {
 
 	// Setup Maintenance Page Server
 	maintenanceEcho := setupEcho(log)
-	maintenanceEcho.Static("/", "public")
+	maintenanceEcho.Use(maintenanceMiddleware("public"))
 
 	// Setup Admin Page Server
 	adminEcho := setupEcho(log)
