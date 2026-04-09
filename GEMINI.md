@@ -8,7 +8,7 @@ maintenance-page needs to be able to communicate with the Kubernetes API in orde
 
 maintenance-page uses basic auth to protect access to the admin maintenance page. The actual maintenance page does not need authentication.
 
-The design of the maintenance page should be lifted directly from its implementation in Sonora (see ../sonora). The page is currently defined in the public/maintenance.html and public/maintenance.css files. Any additional image files should be located in the Sonora project as well. Please keep the design of the page intact, it should be servable as a static page.
+The design of the maintenance page should be lifted directly from its implementation in Sonora (see ../sonora). The page is currently defined in the public/maintenance_index.html and public/maintenance_index.css files. Any additional image files should be located in the Sonora project as well. Please keep the design of the page intact, it should be servable as a static page.
 
 ## Configuration
 
