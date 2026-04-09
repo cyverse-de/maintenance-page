@@ -24,14 +24,14 @@ import (
 var log = logrus.New()
 
 // maintenanceMiddleware serves static files from a directory for any base URL path. It works by inspecting the URL
-// path. If the URL path ends with a slash then the contents of `index.html` are returned. Otherwise, the base name is
-// extracted from the URL. If a file with that base name exists in the directory then the contents of that file are
-// returned. Otherwise, the contents of `index.html` are returned.
+// path. If the URL path ends with a slash then the contents of `maintenance_index.html` are returned. Otherwise, the
+// base name is extracted from the URL. If a file with that base name exists in the directory then the contents of that
+// file are returned. Otherwise, the contents of `maintenance_index.html` are returned.
 func maintenanceMiddleware(maintenancePageDirectory string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			urlPath := c.Request().URL.Path
-			defaultPath := filepath.Join(maintenancePageDirectory, "index.html")
+			defaultPath := filepath.Join(maintenancePageDirectory, "maintenance_index.html")
 
 			// Extract the basename from the URL path, returning the default file if the basename is empty.
 			re := regexp.MustCompile(`/[^/]*$`)
@@ -90,7 +90,7 @@ func main() {
 		httpRouteName          = flag.String("sonora-route-name", getEnv("SONORA_ROUTE_NAME", "discoenv-routes"), "The name of the HTTPRoute to toggle.")
 		deUIService            = flag.String("sonora-service", getEnv("SONORA_SERVICE", "sonora"), "The name of the normal DE UI service.")
 		deUIPort               = flag.Int("sonora-port", 80, "The port of the normal DE UI service.")
-		adminTemplate          = flag.String("admin-template", getEnv("ADMIN_TEMPLATE", "public/admin.html"), "The path to the admin page template.")
+		adminTemplate          = flag.String("admin-template", getEnv("ADMIN_TEMPLATE", "public/maintenance_admin.html"), "The path to the admin page template.")
 	)
 	flag.Parse()
 

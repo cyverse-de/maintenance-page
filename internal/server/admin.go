@@ -35,7 +35,7 @@ type AdminApp struct {
 
 // NewAdminApp creates a new AdminApp instance and parses the administration interface template.
 func NewAdminApp(k8sClient k8s.K8sClient, routeName, maintSvc, deUISvc string, maintPort, deUIPort int32, templatePath string, log *logrus.Logger) (*AdminApp, error) {
-	tmpl, err := template.New("admin.html").ParseFiles(templatePath)
+	tmpl, err := template.New("maintenance_admin.html").ParseFiles(templatePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse template %s: %w", templatePath, err)
 	}
@@ -89,7 +89,7 @@ func (a *AdminApp) HandleIndex(c echo.Context) error {
 		IsMaintenance: isMaint,
 	}
 
-	return c.Render(http.StatusOK, "admin.html", data)
+	return c.Render(http.StatusOK, "maintenance_admin.html", data)
 }
 
 // HandleToggle toggles the maintenance mode by updating the HTTPRoute.
