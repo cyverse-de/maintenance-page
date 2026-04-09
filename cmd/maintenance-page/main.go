@@ -23,6 +23,9 @@ import (
 
 var log = logrus.New()
 
+// A regular expression used to extract the basename from a URL path in the maintenance page middleware.
+var basenameRegex = regexp.MustCompile(`/[^/]*$`)
+
 // maintenanceMiddleware serves static files from a directory for any base URL path. It works by inspecting the URL
 // path. If the URL path ends with a slash then the contents of `maintenance_index.html` are returned. Otherwise, the
 // base name is extracted from the URL. If a file with that base name exists in the directory then the contents of that
@@ -34,8 +37,7 @@ func maintenanceMiddleware(maintenancePageDirectory string) echo.MiddlewareFunc 
 			defaultPath := filepath.Join(maintenancePageDirectory, "maintenance_index.html")
 
 			// Extract the basename from the URL path, returning the default file if the basename is empty.
-			re := regexp.MustCompile(`/[^/]*$`)
-			basename := strings.TrimPrefix(re.FindString(urlPath), "/")
+			basename := strings.TrimPrefix(basenameRegex.FindString(urlPath), "/")
 			if basename == "" {
 				return c.File(defaultPath)
 			}
