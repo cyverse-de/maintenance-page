@@ -91,8 +91,6 @@ func main() {
 	var (
 		maintenancePageService = flag.String("maintenance-page-service", getEnv("MAINTENANCE_PAGE_SERVICE", "maintenance-page"), "The name of the K8s Service for the loading page.")
 		adminPageService       = flag.String("admin-page-service", getEnv("ADMIN_PAGE_SERVICE", "maintenance-page-admin"), "The name of the K8s Service for the admin page.")
-		basicAuthUsername      = flag.String("basic-auth-username", getEnv("BASIC_AUTH_USERNAME", ""), "The username for the admin page.")
-		basicAuthPassword      = flag.String("basic-auth-password", getEnv("BASIC_AUTH_PASSWORD", ""), "The password for the admin page.")
 		port                   = flag.Int("port", 8080, "The port to listen on for the maintenance page.")
 		adminPort              = flag.Int("admin-port", 8081, "The port to listen on for the admin page.")
 		kubeconfig             = flag.String("kubeconfig", getEnv("KUBECONFIG", ""), "Path to kubeconfig (empty for in-cluster)")
@@ -104,8 +102,11 @@ func main() {
 	)
 	flag.Parse()
 
-	if *basicAuthUsername == "" || *basicAuthPassword == "" {
-		log.Fatal("--basic-auth-username and --basic-auth-password (or corresponding environment variables) are required")
+	// Read auth credentials from environment variables only to avoid exposing them in process listings.
+	basicAuthUsername := os.Getenv("BASIC_AUTH_USERNAME")
+	basicAuthPassword := os.Getenv("BASIC_AUTH_PASSWORD")
+	if basicAuthUsername == "" || basicAuthPassword == "" {
+		log.Fatal("BASIC_AUTH_USERNAME and BASIC_AUTH_PASSWORD environment variables are required")
 	}
 
 	// Initialize K8s client
@@ -149,8 +150,8 @@ func main() {
 	// Setup Admin Page Server
 	adminEcho := setupEcho(log)
 	adminEcho.Use(middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
-		usernameMatch := subtle.ConstantTimeCompare([]byte(username), []byte(*basicAuthUsername)) == 1
-		passwordMatch := subtle.ConstantTimeCompare([]byte(password), []byte(*basicAuthPassword)) == 1
+		usernameMatch := subtle.ConstantTimeCompare([]byte(username), []byte(basicAuthUsername)) == 1
+		passwordMatch := subtle.ConstantTimeCompare([]byte(password), []byte(basicAuthPassword)) == 1
 		return usernameMatch && passwordMatch, nil
 	}))
 

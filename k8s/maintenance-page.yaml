@@ -29,8 +29,6 @@ spec:
               ephemeral-storage: "100Mi"
           args:
             - --namespace=$(DE_ENV)
-            - --basic-auth-username=$(BASIC_AUTH_USERNAME)
-            - --basic-auth-password=$(BASIC_AUTH_PASSWORD)
           env:
             - name: DE_ENV
               valueFrom:
