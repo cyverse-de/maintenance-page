@@ -33,7 +33,7 @@ func (m *MockK8sClient) IsMaintenanceMode(ctx context.Context, routeName, mainte
 }
 
 // SetMaintenanceMode is a mock implementation of SetMaintenanceMode.
-func (m *MockK8sClient) SetMaintenanceMode(ctx context.Context, routeName, targetServiceName string, targetPort int32) error {
+func (m *MockK8sClient) SetMaintenanceMode(ctx context.Context, routeName, targetServiceName string, targetPort int32, knownServices []string) error {
 	if m.setMaintError != nil {
 		return m.setMaintError
 	}

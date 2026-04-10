@@ -140,7 +140,7 @@ func TestSetMaintenanceMode(t *testing.T) {
 	ctx := context.Background()
 
 	// Set to maintenance
-	err := client.SetMaintenanceMode(ctx, routeName, "maint-svc", 80)
+	err := client.SetMaintenanceMode(ctx, routeName, "maint-svc", 80, []string{"sonora", "maint-svc"})
 	require.NoError(t, err)
 
 	updatedRoute, err := gwClient.GatewayV1().HTTPRoutes(namespace).Get(ctx, routeName, metav1.GetOptions{})
@@ -148,7 +148,7 @@ func TestSetMaintenanceMode(t *testing.T) {
 	assert.Equal(t, gatewayv1.ObjectName("maint-svc"), updatedRoute.Spec.Rules[0].BackendRefs[0].Name)
 
 	// Set back to sonora
-	err = client.SetMaintenanceMode(ctx, routeName, "sonora", 80)
+	err = client.SetMaintenanceMode(ctx, routeName, "sonora", 80, []string{"sonora", "maint-svc"})
 	require.NoError(t, err)
 
 	updatedRoute, err = gwClient.GatewayV1().HTTPRoutes(namespace).Get(ctx, routeName, metav1.GetOptions{})
@@ -189,7 +189,7 @@ func TestSetMaintenanceMode(t *testing.T) {
 		},
 	}
 	_, _ = gwClient.GatewayV1().HTTPRoutes(namespace).Create(ctx, multiRuleRoute, metav1.CreateOptions{})
-	err = client.SetMaintenanceMode(ctx, "multi-rule", "new-svc", 80)
+	err = client.SetMaintenanceMode(ctx, "multi-rule", "new-svc", 80, []string{"sonora", "maint-svc"})
 	require.NoError(t, err)
 
 	updatedRoute, err = gwClient.GatewayV1().HTTPRoutes(namespace).Get(ctx, "multi-rule", metav1.GetOptions{})
@@ -212,7 +212,7 @@ func TestSetMaintenanceMode(t *testing.T) {
 		},
 	}
 	_, _ = gwClient.GatewayV1().HTTPRoutes(namespace).Create(ctx, routeNoRules, metav1.CreateOptions{})
-	err = client.SetMaintenanceMode(ctx, "no-rules", "maint-svc", 80)
+	err = client.SetMaintenanceMode(ctx, "no-rules", "maint-svc", 80, []string{"sonora", "maint-svc"})
 	require.Error(t, err)
 	assert.True(t, errors.Is(err, ErrNoSuitableRules))
 }

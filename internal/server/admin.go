@@ -118,7 +118,7 @@ func (a *AdminApp) HandleToggle(c echo.Context) error {
 		"targetPort":         targetPort,
 	}).Info("toggling maintenance mode")
 
-	err = a.k8sClient.SetMaintenanceMode(ctx, a.httpRouteName, targetSvc, targetPort)
+	err = a.k8sClient.SetMaintenanceMode(ctx, a.httpRouteName, targetSvc, targetPort, []string{a.maintenanceServiceName, a.deUIServiceName})
 	if err != nil {
 		a.log.WithError(err).WithField("targetService", targetSvc).Error("failed to set maintenance mode")
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())

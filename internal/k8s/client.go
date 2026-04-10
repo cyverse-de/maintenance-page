@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
@@ -27,7 +28,8 @@ type K8sClient interface {
 	// IsMaintenanceMode returns true if the specified HTTPRoute points to the maintenance service.
 	IsMaintenanceMode(ctx context.Context, routeName, maintenanceServiceName string) (bool, error)
 	// SetMaintenanceMode updates the specified HTTPRoute to point to the target service.
-	SetMaintenanceMode(ctx context.Context, routeName, targetServiceName string, servicePort int32) error
+	// Only rules whose current backend is in knownServices will be updated.
+	SetMaintenanceMode(ctx context.Context, routeName, targetServiceName string, servicePort int32, knownServices []string) error
 }
 
 // Client is a Kubernetes client that implements the K8sClient interface.
@@ -132,8 +134,9 @@ func (c *Client) IsMaintenanceMode(ctx context.Context, routeName, maintenanceSe
 }
 
 // SetMaintenanceMode updates the specified HTTPRoute to point to the target service.
-// It only updates rules that currently point to either the maintenance service or the normal DE UI service.
-func (c *Client) SetMaintenanceMode(ctx context.Context, routeName, targetServiceName string, servicePort int32) error {
+// Only rules whose current backend is in knownServices will be updated, preventing
+// accidental modification of rules pointing to unrelated services.
+func (c *Client) SetMaintenanceMode(ctx context.Context, routeName, targetServiceName string, servicePort int32, knownServices []string) error {
 	log := c.log.WithFields(logrus.Fields{
 		"route":  routeName,
 		"target": targetServiceName,
@@ -152,11 +155,10 @@ func (c *Client) SetMaintenanceMode(ctx context.Context, routeName, targetServic
 		shouldUpdateRule := false
 		var oldTarget string
 		for _, backend := range rule.BackendRefs {
-			// A rule is a candidate for toggling if it currently points to a service.
-			// This heuristic assumes that rules in this specific HTTPRoute are intended to be toggled.
-			if backend.Name != "" {
+			name := string(backend.Name)
+			if slices.Contains(knownServices, name) {
 				shouldUpdateRule = true
-				oldTarget = string(backend.Name)
+				oldTarget = name
 				break
 			}
 		}
