@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/sirupsen/logrus"
@@ -15,6 +16,9 @@ import (
 	gatewayv1 "sigs.k8s.io/gateway-api/apis/v1"
 	gatewayclient "sigs.k8s.io/gateway-api/pkg/client/clientset/versioned"
 )
+
+// ErrNoSuitableRules is returned when no HTTPRoute rules match the known services to update.
+var ErrNoSuitableRules = errors.New("no suitable rules found in HTTPRoute to update")
 
 // K8sClient defines the interface for interacting with Kubernetes resources needed for maintenance mode.
 type K8sClient interface {
@@ -178,7 +182,7 @@ func (c *Client) SetMaintenanceMode(ctx context.Context, routeName, targetServic
 	}
 
 	if !updated {
-		return fmt.Errorf("no suitable rules found in HTTPRoute %s to update", routeName)
+		return fmt.Errorf("HTTPRoute %s: %w", routeName, ErrNoSuitableRules)
 	}
 
 	_, err = c.gatewayClient.GatewayV1().HTTPRoutes(c.namespace).Update(ctx, route, metav1.UpdateOptions{})

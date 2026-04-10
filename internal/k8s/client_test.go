@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -213,5 +214,5 @@ func TestSetMaintenanceMode(t *testing.T) {
 	_, _ = gwClient.GatewayV1().HTTPRoutes(namespace).Create(ctx, routeNoRules, metav1.CreateOptions{})
 	err = client.SetMaintenanceMode(ctx, "no-rules", "maint-svc", 80)
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "no suitable rules found")
+	assert.True(t, errors.Is(err, ErrNoSuitableRules))
 }
