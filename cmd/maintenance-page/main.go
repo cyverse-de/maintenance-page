@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/subtle"
 	"errors"
 	"flag"
 	"fmt"
@@ -148,7 +149,9 @@ func main() {
 	// Setup Admin Page Server
 	adminEcho := setupEcho(log)
 	adminEcho.Use(middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
-		return username == *basicAuthUsername && password == *basicAuthPassword, nil
+		usernameMatch := subtle.ConstantTimeCompare([]byte(username), []byte(*basicAuthUsername)) == 1
+		passwordMatch := subtle.ConstantTimeCompare([]byte(password), []byte(*basicAuthPassword)) == 1
+		return usernameMatch && passwordMatch, nil
 	}))
 
 	adminApp, err := server.NewAdminApp(k8sClient, *httpRouteName, *maintenancePageService, *deUIService, 80, int32(*deUIPort), *adminTemplate, log)
