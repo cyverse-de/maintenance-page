@@ -4,8 +4,8 @@ WORKDIR /src
 
 RUN apk add --no-cache ca-certificates tzdata
 
-ARG TARGETOS=linux
-ARG TARGETARCH=amd64
+ARG TARGETOS
+ARG TARGETARCH
 
 COPY go.mod go.sum ./
 RUN go mod download
