@@ -30,11 +30,12 @@ var basenameRegex = regexp.MustCompile(`/[^/]*$`)
 // path. If the URL path ends with a slash then the contents of `maintenance_index.html` are returned. Otherwise, the
 // base name is extracted from the URL. If a file with that base name exists in the directory then the contents of that
 // file are returned. Otherwise, the contents of `maintenance_index.html` are returned.
-func maintenanceMiddleware(maintenancePageDirectory string) echo.MiddlewareFunc {
+// The absDir parameter must be an absolute path to the maintenance page directory.
+func maintenanceMiddleware(absDir string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			urlPath := c.Request().URL.Path
-			defaultPath := filepath.Join(maintenancePageDirectory, "maintenance_index.html")
+			defaultPath := filepath.Join(absDir, "maintenance_index.html")
 
 			// Extract the basename from the URL path, returning the default file if the basename is empty.
 			basename := strings.TrimPrefix(basenameRegex.FindString(urlPath), "/")
@@ -42,10 +43,16 @@ func maintenanceMiddleware(maintenancePageDirectory string) echo.MiddlewareFunc 
 				return c.File(defaultPath)
 			}
 
-			// Return the file with the given basename if it exists in the maintenance page directory.
-			filePath := filepath.Join(maintenancePageDirectory, filepath.Clean(basename))
-			if info, err := os.Stat(filePath); err == nil && !info.IsDir() {
-				return c.File(filePath)
+			// Resolve the full path and verify it's still within the maintenance page directory.
+			filePath := filepath.Join(absDir, filepath.Clean(basename))
+			resolved, err := filepath.Abs(filePath)
+			if err != nil || !strings.HasPrefix(resolved, absDir+string(os.PathSeparator)) {
+				return c.File(defaultPath)
+			}
+
+			// Return the file if it exists.
+			if info, err := os.Stat(resolved); err == nil && !info.IsDir() {
+				return c.File(resolved)
 			}
 
 			// Fall back to the default path.
@@ -125,9 +132,15 @@ func main() {
 		log.Errorf("failed to ensure admin page service: %v", err)
 	}
 
+	// Resolve the maintenance page directory to an absolute path for path traversal protection.
+	absDir, err := filepath.Abs("public")
+	if err != nil {
+		log.Fatalf("failed to resolve maintenance page directory: %v", err)
+	}
+
 	// Setup Maintenance Page Server
 	maintenanceEcho := setupEcho(log)
-	maintenanceEcho.Use(maintenanceMiddleware("public"))
+	maintenanceEcho.Use(maintenanceMiddleware(absDir))
 
 	// Setup Admin Page Server
 	adminEcho := setupEcho(log)
