@@ -120,15 +120,18 @@ func main() {
 	labels := map[string]string{"app": "maintenance-page"}
 
 	// Ensure Maintenance Page Service
-	ensureCtx, ensureCancel := context.WithTimeout(ctx, 30*time.Second)
-	defer ensureCancel()
+	ensureCtx1, ensureCancel1 := context.WithTimeout(ctx, 30*time.Second)
+	defer ensureCancel1()
 
-	if err := k8sClient.EnsureService(ensureCtx, *maintenancePageService, 80, int32(*port), labels); err != nil {
+	if err := k8sClient.EnsureService(ensureCtx1, *maintenancePageService, 80, int32(*port), labels); err != nil {
 		log.Errorf("failed to ensure maintenance page service: %v", err)
 	}
 
 	// Ensure Admin Page Service
-	if err := k8sClient.EnsureService(ensureCtx, *adminPageService, 80, int32(*adminPort), labels); err != nil {
+	ensureCtx2, ensureCancel2 := context.WithTimeout(ctx, 30*time.Second)
+	defer ensureCancel2()
+
+	if err := k8sClient.EnsureService(ensureCtx2, *adminPageService, 80, int32(*adminPort), labels); err != nil {
 		log.Errorf("failed to ensure admin page service: %v", err)
 	}
 
