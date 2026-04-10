@@ -54,13 +54,13 @@ spec:
               containerPort: 8081
           livenessProbe:
             httpGet:
-              path: /index.html
+              path: /
               port: 8080
             initialDelaySeconds: 2
             periodSeconds: 2
           readinessProbe:
             httpGet:
-              path: /index.html
+              path: /
               port: 8080
             initialDelaySeconds: 2
             periodSeconds: 2
