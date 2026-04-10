@@ -154,6 +154,9 @@ func main() {
 		passwordMatch := subtle.ConstantTimeCompare([]byte(password), []byte(basicAuthPassword)) == 1
 		return usernameMatch && passwordMatch, nil
 	}))
+	adminEcho.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
+		TokenLookup: "form:_csrf",
+	}))
 
 	adminApp, err := server.NewAdminApp(k8sClient, *httpRouteName, *maintenancePageService, *deUIService, 80, int32(*deUIPort), *adminTemplate, log)
 	if err != nil {

@@ -21,6 +21,7 @@
         {{end}}
     </div>
     <form action="/toggle" method="post">
+        <input type="hidden" name="_csrf" value="{{.CSRFToken}}">
         <button type="submit">
             {{if .IsMaintenance}}
                 Disable Maintenance Mode

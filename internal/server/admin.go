@@ -83,10 +83,16 @@ func (a *AdminApp) HandleIndex(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
+	// The CSRF token is set by Echo's CSRF middleware. It may be nil in tests
+	// where the middleware is not active.
+	csrfToken, _ := c.Get("csrf").(string)
+
 	data := struct {
 		IsMaintenance bool
+		CSRFToken     string
 	}{
 		IsMaintenance: isMaint,
+		CSRFToken:     csrfToken,
 	}
 
 	return c.Render(http.StatusOK, "maintenance_admin.html", data)
