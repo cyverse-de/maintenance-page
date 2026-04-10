@@ -20,7 +20,7 @@
             <span class="off">OFF (DE UI Active)</span>
         {{end}}
     </div>
-    <form action="/toggle" method="post">
+    <form action="/toggle" method="post" onsubmit="return confirm('Are you sure you want to toggle maintenance mode? This will affect production traffic.')">
         <input type="hidden" name="_csrf" value="{{.CSRFToken}}">
         <button type="submit">
             {{if .IsMaintenance}}
