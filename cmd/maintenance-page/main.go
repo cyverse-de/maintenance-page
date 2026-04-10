@@ -21,17 +21,15 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var log = logrus.New()
-
-// A regular expression used to extract the basename from a URL path in the maintenance page middleware.
-var basenameRegex = regexp.MustCompile(`/[^/]*$`)
-
 // maintenanceMiddleware serves static files from a directory for any base URL path. It works by inspecting the URL
 // path. If the URL path ends with a slash then the contents of `maintenance_index.html` are returned. Otherwise, the
 // base name is extracted from the URL. If a file with that base name exists in the directory then the contents of that
 // file are returned. Otherwise, the contents of `maintenance_index.html` are returned.
 // The absDir parameter must be an absolute path to the maintenance page directory.
 func maintenanceMiddleware(absDir string) echo.MiddlewareFunc {
+	// Matches the last path segment in a URL path (e.g., "/foo" in "/a/b/foo").
+	basenameRegex := regexp.MustCompile(`/[^/]*$`)
+
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			urlPath := c.Request().URL.Path
@@ -87,6 +85,8 @@ func getEnv(key, fallback string) string {
 }
 
 func main() {
+	log := logrus.New()
+
 	var (
 		maintenancePageService = flag.String("maintenance-page-service", getEnv("MAINTENANCE_PAGE_SERVICE", "maintenance-page"), "The name of the K8s Service for the loading page.")
 		adminPageService       = flag.String("admin-page-service", getEnv("ADMIN_PAGE_SERVICE", "maintenance-page-admin"), "The name of the K8s Service for the admin page.")
