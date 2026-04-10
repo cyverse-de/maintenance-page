@@ -69,6 +69,8 @@ func NewClient(kubeconfig, namespace string, log *logrus.Logger) (*Client, error
 }
 
 // EnsureService creates the service with the given name and labels if it doesn't already exist.
+// It does not update the service if it already exists with different configuration; the assumption
+// is that services are either created fresh or managed externally.
 func (c *Client) EnsureService(ctx context.Context, name string, port, targetPort int32, labels map[string]string) error {
 	log := c.log.WithFields(logrus.Fields{
 		"service":    name,
