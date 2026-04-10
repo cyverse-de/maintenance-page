@@ -6,6 +6,8 @@ import (
 	"html/template"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/labstack/echo/v4"
@@ -13,6 +15,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// testTemplatePath returns the absolute path to the admin template, resolved
+// relative to this test file's location so tests work from any working directory.
+func testTemplatePath() string {
+	_, filename, _, _ := runtime.Caller(0)
+	return filepath.Join(filepath.Dir(filename), "..", "..", "public", "maintenance_admin.html")
+}
 
 // MockK8sClient is a mock implementation of the k8s.K8sClient interface for testing.
 type MockK8sClient struct {
@@ -50,7 +59,7 @@ func TestHandleToggle(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		mockK8s := &MockK8sClient{isMaintenance: false}
-		app, err := NewAdminApp(mockK8s, "route", "maintenance-page", "de-ui", 80, 80, "../../public/maintenance_admin.html", logrus.New())
+		app, err := NewAdminApp(mockK8s, "route", "maintenance-page", "de-ui", 80, 80, testTemplatePath(), logrus.New())
 		require.NoError(t, err)
 
 		// First toggle: OFF -> ON
@@ -76,7 +85,7 @@ func TestHandleToggle(t *testing.T) {
 
 	t.Run("IsMaintenanceMode error", func(t *testing.T) {
 		mockK8s := &MockK8sClient{isMaintError: fmt.Errorf("k8s error")}
-		app, err := NewAdminApp(mockK8s, "route", "maintenance-page", "de-ui", 80, 80, "../../public/maintenance_admin.html", logrus.New())
+		app, err := NewAdminApp(mockK8s, "route", "maintenance-page", "de-ui", 80, 80, testTemplatePath(), logrus.New())
 		require.NoError(t, err)
 
 		req := httptest.NewRequest(http.MethodPost, "/toggle", nil)
@@ -90,7 +99,7 @@ func TestHandleToggle(t *testing.T) {
 
 	t.Run("SetMaintenanceMode error", func(t *testing.T) {
 		mockK8s := &MockK8sClient{setMaintError: fmt.Errorf("k8s error")}
-		app, err := NewAdminApp(mockK8s, "route", "maintenance-page", "de-ui", 80, 80, "../../public/maintenance_admin.html", logrus.New())
+		app, err := NewAdminApp(mockK8s, "route", "maintenance-page", "de-ui", 80, 80, testTemplatePath(), logrus.New())
 		require.NoError(t, err)
 
 		req := httptest.NewRequest(http.MethodPost, "/toggle", nil)
@@ -108,7 +117,7 @@ func TestHandleStatus(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		mockK8s := &MockK8sClient{isMaintenance: true}
-		app, err := NewAdminApp(mockK8s, "route", "maintenance-page", "de-ui", 80, 80, "../../public/maintenance_admin.html", logrus.New())
+		app, err := NewAdminApp(mockK8s, "route", "maintenance-page", "de-ui", 80, 80, testTemplatePath(), logrus.New())
 		require.NoError(t, err)
 
 		req := httptest.NewRequest(http.MethodGet, "/maintenance", nil)
@@ -123,7 +132,7 @@ func TestHandleStatus(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		mockK8s := &MockK8sClient{isMaintError: fmt.Errorf("k8s error")}
-		app, err := NewAdminApp(mockK8s, "route", "maintenance-page", "de-ui", 80, 80, "../../public/maintenance_admin.html", logrus.New())
+		app, err := NewAdminApp(mockK8s, "route", "maintenance-page", "de-ui", 80, 80, testTemplatePath(), logrus.New())
 		require.NoError(t, err)
 
 		req := httptest.NewRequest(http.MethodGet, "/maintenance", nil)
@@ -141,7 +150,7 @@ func TestHandleIndex(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		mockK8s := &MockK8sClient{isMaintenance: false}
-		app, err := NewAdminApp(mockK8s, "route", "maintenance-page", "de-ui", 80, 80, "../../public/maintenance_admin.html", logrus.New())
+		app, err := NewAdminApp(mockK8s, "route", "maintenance-page", "de-ui", 80, 80, testTemplatePath(), logrus.New())
 		require.NoError(t, err)
 		app.Register(e)
 
@@ -158,7 +167,7 @@ func TestHandleIndex(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		mockK8s := &MockK8sClient{isMaintError: fmt.Errorf("k8s error")}
-		app, err := NewAdminApp(mockK8s, "route", "maintenance-page", "de-ui", 80, 80, "../../public/maintenance_admin.html", logrus.New())
+		app, err := NewAdminApp(mockK8s, "route", "maintenance-page", "de-ui", 80, 80, testTemplatePath(), logrus.New())
 		require.NoError(t, err)
 
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -186,7 +195,7 @@ func TestNewAdminApp(t *testing.T) {
 	mockK8s := &MockK8sClient{}
 
 	t.Run("success", func(t *testing.T) {
-		app, err := NewAdminApp(mockK8s, "route", "maint", "deui", 80, 80, "../../public/maintenance_admin.html", logrus.New())
+		app, err := NewAdminApp(mockK8s, "route", "maint", "deui", 80, 80, testTemplatePath(), logrus.New())
 		assert.NoError(t, err)
 		assert.NotNil(t, app)
 	})
